@@ -16,7 +16,7 @@ GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS", "")
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
 NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", "")
 
-# اجبار به استفاده از IPv4 به‌جای IPv6 (مشکل شبکه روی برخی سرورهای ابری)
+# اجبار به استفاده از IPv4 به‌جای IPv6
 _orig_getaddrinfo = socket.getaddrinfo
 
 
@@ -87,8 +87,7 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/submit", methods=["POST"])
-def submit(@app.route("/diag")
+@app.route("/diag")
 def diag():
     import socket as sk
     results = {}
@@ -105,7 +104,11 @@ def diag():
             results[f"{host}:{port}"] = "OK"
         except Exception as e:
             results[f"{host}:{port}"] = f"FAIL - {e}"
-    return jsonify(results)):
+    return jsonify(results)
+
+
+@app.route("/submit", methods=["POST"])
+def submit():
     data = request.get_json(force=True, silent=True) or {}
     name = (data.get("name") or "").strip()
     phone = (data.get("phone") or "").strip()
