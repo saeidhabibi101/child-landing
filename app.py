@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import smtplib
+import socket
 from email.mime.text import MIMEText
 from datetime import datetime
 
@@ -14,6 +15,16 @@ DB_PATH = os.path.join(BASE_DIR, "leads.db")
 GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS", "")
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
 NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", "")
+
+# اجبار به استفاده از IPv4 به‌جای IPv6 (مشکل شبکه روی برخی سرورهای ابری)
+_orig_getaddrinfo = socket.getaddrinfo
+
+
+def _ipv4_only_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+    return _orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+
+
+socket.getaddrinfo = _ipv4_only_getaddrinfo
 
 
 def init_db():
