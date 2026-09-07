@@ -88,7 +88,24 @@ def index():
 
 
 @app.route("/submit", methods=["POST"])
-def submit():
+def submit(@app.route("/diag")
+def diag():
+    import socket as sk
+    results = {}
+    tests = [
+        ("smtp.gmail.com", 587),
+        ("smtp.gmail.com", 465),
+        ("tapi.bale.ai", 443),
+        ("8.8.8.8", 53),
+    ]
+    for host, port in tests:
+        try:
+            s = sk.create_connection((host, port), timeout=5)
+            s.close()
+            results[f"{host}:{port}"] = "OK"
+        except Exception as e:
+            results[f"{host}:{port}"] = f"FAIL - {e}"
+    return jsonify(results)):
     data = request.get_json(force=True, silent=True) or {}
     name = (data.get("name") or "").strip()
     phone = (data.get("phone") or "").strip()
