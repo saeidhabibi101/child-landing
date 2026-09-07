@@ -1,8 +1,9 @@
 import os
 import sqlite3
+import smtplib
+from email.mime.text import MIMEText
 from datetime import datetime
 
-import requests
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
@@ -10,8 +11,9 @@ app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "leads.db")
 
-BALE_BOT_TOKEN = os.environ.get("BALE_BOT_TOKEN", "")
-BALE_CHAT_ID = os.environ.get("BALE_CHAT_ID", "")
+GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS", "")
+GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
+NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", "")
 
 
 def init_db():
@@ -41,22 +43,28 @@ def save_lead(name, phone, child_age):
     conn.close()
 
 
-def notify_bale(name, phone, child_age):
-    if not BALE_BOT_TOKEN or not BALE_CHAT_ID:
-        print("BALE_BOT_TOKEN یا BALE_CHAT_ID ست نشده — پیام ارسال نشد.")
+def notify_email(name, phone, child_age):
+    if not GMAIL_ADDRESS or not GMAIL_APP_PASSWORD or not NOTIFY_EMAIL:
+        print("تنظیمات ایمیل کامل نیست — ایمیل ارسال نشد.")
         return
 
-    url = f"https://tapi.bale.ai/bot{BALE_BOT_TOKEN}/sendMessage"
-    text = (
-        "لید جدید ثبت شد ✅\n"
+    body = (
+        "لید جدید ثبت شد\n\n"
         f"نام: {name}\n"
         f"تماس: {phone}\n"
         f"سن فرزند: {child_age or '-'}"
     )
+    msg = MIMEText(body)
+    msg["Subject"] = "لید جدید - مشاوره کودک"
+    msg["From"] = GMAIL_ADDRESS
+    msg["To"] = NOTIFY_EMAIL
+
     try:
-        requests.post(url, json={"chat_id": BALE_CHAT_ID, "text": text}, timeout=10)
-    except requests.RequestException as e:
-        print("ارسال پیام به بله ناموفق بود:", e)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
+            server.send_message(msg)
+    except Exception as e:
+        print("ارسال ایمیل ناموفق بود:", e)
 
 
 init_db()
@@ -78,7 +86,7 @@ def submit():
         return jsonify({"ok": False, "error": "نام و شماره تماس الزامی است"}), 400
 
     save_lead(name, phone, child_age)
-    notify_bale(name, phone, child_age)
+    notify_email(name, phone, child_age)
 
     return jsonify({"ok": True})
 
