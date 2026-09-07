@@ -16,7 +16,6 @@ GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS", "")
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
 NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", "")
 
-# اجبار به استفاده از IPv4 به‌جای IPv6
 _orig_getaddrinfo = socket.getaddrinfo
 
 
