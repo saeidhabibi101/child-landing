@@ -60,7 +60,8 @@ def notify_email(name, phone, child_age):
     msg["To"] = NOTIFY_EMAIL
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
+            server.starttls()
             server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
             server.send_message(msg)
     except Exception as e:
